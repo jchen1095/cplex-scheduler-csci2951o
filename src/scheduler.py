@@ -117,21 +117,20 @@ class Scheduler:
     def build_constraints(self):
         #need to add constraint for weeks
 
-        for weeks in range(self.config.n_weeks):
-            print("week:", weeks)
-            week_start = weeks * 7
-            week_end = (weeks + 1) * 7
-            print(f"Week {weeks}: Days {week_start} to {week_end}")
-            for employee in range(self.config.n_employees):
-                self.model.add(all_diff(self.shift_vars[employee][:4]))  # Assuming you want the first four days
+        for employee in range(self.config.n_employees):
+            self.model.add(all_diff(self.shift_vars[employee][:4]))  # Assuming you want the first four days
             # night_shift_count = 0 
             
-                print("Number of weeks:", self.config.n_weeks)
-                self.model.add(sum(self.hours_vars[employee][(week_start):week_end]) <= self.config.employee_max_weekly)  
-                self.model.add(sum(self.hours_vars[employee][(week_start):week_end]) >= self.config.employee_min_weekly) 
-    
-                self.model.add((self.model.count(self.shift_vars[employee],1)) <= self.config.employee_max_total_night_shifts)
-                for day in range(self.config.n_days):
+                # print("Number of weeks:", self.config.n_weeks)
+            self.model.add((self.model.count(self.shift_vars[employee],1)) <= self.config.employee_max_total_night_shifts)
+            for weeks in range(self.config.n_weeks):
+                shifts_weekly= []
+                hours_weekly = []
+                week_start = weeks * 7
+                week_end = (weeks + 1) * 7
+                for day in range(week_start, week_end):
+                    shifts_weekly.append(self.shift_vars[employee][day])
+                    hours_weekly.append(self.hours_vars[employee][day])
                     # self.model.add((self.model.count(self.shift_vars[:, day],0),self.config.min_shifts[day][0],self.config.n_employees))
                     # self.model.add((self.model.sum(self.hours_vars[:][day]) >= self.config.min_daily))
                     # self.model.add((self.model.sum(self.hours_vars[day]) >= self.config.min_daily))
@@ -141,9 +140,13 @@ class Scheduler:
                     if day >= 1 and day <= self.config.n_days - 1: #if the day is not the first or last day, which should account for all days
                         self.model.add(self.model.if_then((self.shift_vars[employee][day] == 1), self.shift_vars[employee][day] != self.shift_vars[employee][day - self.config.employee_max_consecutive_night_shifts]))
                         self.model.add(self.model.if_then((self.shift_vars[employee][day] == 1), self.shift_vars[employee][day] != self.shift_vars[employee][day + self.config.employee_max_consecutive_night_shifts]))
+                self.model.add(sum(hours_weekly) <= self.config.employee_max_weekly)  
+                self.model.add(sum(hours_weekly) >= self.config.employee_min_weekly) 
+                self.model.search_phase(shifts_weekly, self.model.select_largest(self.model.var_impact()), self.model.select_largest(self.model.value_impact(),1))
+                self.model.search_phase(hours_weekly, self.model.select_smallest(self.model.var_success_rate()), self.model.select_largest(self.model.value_impact(),4))
                     # if self.model.eq(self.shift_vars[employee][day], 3):
                     #     night_shift_count += 1
-            
+    
 
         for day in range(self.config.n_days):
             shifts_worked = []
@@ -151,21 +154,17 @@ class Scheduler:
             for employee in range(self.config.n_employees):
                 shifts_worked.append(self.shift_vars[employee][day])
                 hours_worked.append(self.hours_vars[employee][day])
+            self.model.search_phase(shifts_worked, self.model.select_largest(self.model.var_impact()), self.model.select_largest(self.model.value_impact(),1))
+            self.model.search_phase(hours_worked, self.model.select_largest(self.model.var_impact()), self.model.select_largest(self.model.value_impact(),4))
             self.model.add((self.model.count(shifts_worked, 1)) >= self.config.min_shifts[day][1])
-            self.model.add((self.model.count(shifts_worked, 0)) >= self.config.min_shifts[day][0])
             self.model.add((self.model.count(shifts_worked, 2)) >= self.config.min_shifts[day][2])
             self.model.add((self.model.count(shifts_worked, 3)) >= self.config.min_shifts[day][3])
-            # print(self.config.min_daily)
-            # print(self.model.sum(hours_worked))
             self.model.add((self.model.sum(hours_worked)) >= self.config.min_daily)
-            
-                
 
-                
-            
-        
-                
+    #search_phase()
     
+            
+    #for a given day, select 
     # self.model.add(sum(self.shift_vars) >= self.config.min_shifts[day][shift])
         
 
@@ -174,12 +173,11 @@ class Scheduler:
             Workers = 1,
             TimeLimit = 300,
             #Do not change the above values 
-            # SearchType="DepthFirst" Uncomment for part 2
-            # LogVerbosity = "Verbose"
+            SearchType="DepthFirst",
+            LogVerbosity = "Verbose" #what is this
         )
         self.model.set_parameters(params)       
         
-
         solution = self.model.solve()
         print(solution)
 
