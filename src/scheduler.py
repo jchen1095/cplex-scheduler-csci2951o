@@ -157,19 +157,7 @@ class Scheduler:
 
     def build_search(self):
       
-      #TODO: Randomize day + weight
-        # favored_days = []
-   
-        # for day in range(self.config.n_days):
-        #     day_weight = 0
-        #     for i in range(0,4):
-        #         day_weight += self.config.min_shifts[day][i]
-        #     favored_days.append((day, day_weight))
-        
-        # favored_days.sort(key=lambda x: x[1], reverse=True)
-        # weighted_days = [[self.shift_vars[employee][day] for day, _ in favored_days] for employee in range(self.config.n_employees)]
-        # # favored_shifts = [max(set(self.shift_vars[day])) for day, _ in favored_days]
-
+    
         hours_worked = []
         for weeks in range(self.config.n_weeks):
             week_start = weeks * 7
@@ -181,16 +169,6 @@ class Scheduler:
                         four_shift_vars.append(self.shift_vars[employee][day])
                 self.model.add(self.model.search_phase(four_shift_vars, self.model.select_random_var(), self.model.select_largest(self.model.value_impact())))
             
-            
-
-            #for day in range(self.config.n_days):
-
-            
-            #     for employee in range(self.config.n_employees):
-            #        shifts_worked.append(self.shift_vars[employee][day])
-            #        hours_worked.append(self.hours_vars[employee][day])
-            # self.model.add(self.model.search_phase(shifts_worked, sel
-                
             hours_weekly = []
             hours_today = []
             for day in range(week_start,week_end):
@@ -209,75 +187,8 @@ class Scheduler:
         
     #             
         self.model.add(self.model.search_phase(hours_worked, self.model.select_random_var(), self.model.select_largest(self.model.value_impact())))
-      
+     
 
-    # def build_search(self):
-        
-    
-    #     # shifts_worked = [] #shifts worked in total
-    #     for weeks in range(self.config.n_weeks):
-    #         hours_worked = []
-    #         week_start = weeks * 7
-    #         week_end = (weeks + 1) * 7
-    #         if(weeks == 0):
-    #             #four_shift_vars = [self.shift_vars[employee][:4] for employee in range(self.config.n_employees)]
-    #             # four_hours_vars = [self.hours_vars[employee][:4] for employee in range(self.config.n_employees)]
-    #             four_shift_vars = []
-    #             for employee in range(self.config.n_employees):
-    #                 for day in range(0,4):
-    #                     four_shift_vars.append(self.shift_vars[employee][day])
-    #                 self.model.add(self.model.search_phase(four_shift_vars, self.model.select_random_var(), self.model.select_largest(self.model.value_impact())))
-    #         # for day in range(week_start,week_end):
-    #         #     shifts_worked_today = [] #shifts worked per week
-    #         #     hours_today = []
-    #         #     for employee in range(self.config.n_employees):
-    #         #         shifts_worked_today.append(self.shift_vars[employee][day])
-    #         #         hours_worked.append(self.hours_vars[employee][day])
-    #         #         hours_today.append(self.hours_vars[employee][day])
-    #         #     #self.model.add(self.model.search_phase(shifts_worked_today, self.model.select_random_var(), self.model.select_largest(self.model.value())))
-    #         #     self.model.add(self.model.search_phase(hours_today, self.model.select_random_var(), self.model.select_smallest(self.model.value(),(self.config.min_daily/self.config.n_employees))))
-                
-    #         hours_weekly = []
-    #         for employee in range(self.config.n_employees):
-    #             # shifts_worked = [] #shifts worked per week
-    #             # hours_weekly = []
-    #             for day in range(week_start,week_end):
-    #                 hours_worked.append(self.hours_vars[employee][day])
-    #                 hours_weekly.append(self.hours_vars[employee][day])
-    #                 # shifts_worked.append(self.shift_vars[employee][day])
-                
-    #             self.model.add(self.model.search_phase(hours_weekly,self.model.select_random_var(), self.model.select_random_value()))
-    #             #self.model.add(self.model.search_phase(shifts_worked, self.model.select_largest(self.model.var_local_impact()), self.model.select_largest(self.model.value())))
-    #         self.model.add(self.model.search_phase(hours_worked, self.model.select_random_var(),self.model.select_random_value()))
-        
-            
-
-        # shifts_worked = []
-        # hours_worked = []
-        # for employee in range(self.config.n_employees):
-        #     for day in range(self.config.n_days):
-        #         shifts_worked.append(self.shift_vars[employee][day])
-        #         hours_worked.append(self.hours_vars[employee][day])
-        #     self.model.add(self.model.search_phase(shifts_worked, self.model.select_random_var(), self.model.select_smallest(self.model.value())))
-        #     self.model.add(self.model.search_phase(hours_worked, self.model.select_random_var(), self.model.select_largest(self.model.value_impact())))
-      
-                
-    #     for employee in range(self.config.n_employees):
-    #         self.model.add(all_diff(self.shift_vars[employee][:4]))  # Assuming you want the first four days
-    #         # night_shift_count = 0 
-            
-    #             # print("Number of weeks:", self.config.n_weeks)
-    #         self.model.add((self.model.count(self.shift_vars[employee],1)) <= self.config.employee_max_total_night_shifts)
-    #         for weeks in range(self.config.n_weeks):
-    #             shifts_weekly= []
-    #             hours_weekly = []
-    #             week_start = weeks * 7
-    #             week_end = (weeks + 1) * 7
-    #             for day in range(week_start, week_end):
-    #                 shifts_weekly.append(self.shift_vars[employee][day])
-    #                 hours_weekly.append(self.hours_vars[employee][day])
-    #             self.model.add(self.model.search_phase(shifts_weekly, self.model.select_largest(self.model.var_impact()), self.model.select_largest(self.model.value_impact(),1)))
-    #             self.model.search_phase(hours_weekly, self.model.select_smallest(self.model.var_success_rate()), self.model.select_largest(self.model.value_impact(),4))
     def testModel(self, schedule: [[]]) -> Boolean:
 
         num_days = self.config.n_days
@@ -308,31 +219,66 @@ class Scheduler:
                 if week_hours < 20 or week_hours > 40:
                     print(f"Error: Employee has total hours outside the range [20, 40] for week {weeks} for employee {employee_schedule}.")
                     return False
+            
+        for weeks in range(self.config.n_weeks):
+            week_start = weeks * 14
+            week_end = (weeks + 1) * 14
+            if weeks == 0:
+                for employee_schedule in schedule:
+                    first_4_days = employee_schedule[:8:2]
+                    if len(set(first_4_days)) != len(first_4_days):
+                        print(f"Error: not alldiff for first 4 days for {employee_schedule}")
+                        return False
+            for i in range(1, len(employee_schedule), 2):  
+                if employee_schedule[i] == 0 and employee_schedule[i - 1] == 0:  
+                    print("Error: Consecutive night shifts detected.")
+                    return False
+                if employee_schedule[i] == 0 and employee_schedule[i + 1] == 0:  
+                    print("Error: Consecutive night shifts detected.")
+                    return False
+            for day in range(week_start, week_end,2):
+                total_hours_per_day = 0
+                night_shift_staff_num = 0
+                day_shift_staff_num = 0
+                evening_shift_staff_num = 0
+                
+                for employee_schedule in schedule:
+                    total_hours_per_employee_per_day = employee_schedule[day+1] - employee_schedule[day]
+                    if employee_schedule[day+1] != -1 and employee_schedule[day] != -1:
+                        if total_hours_per_employee_per_day < self.config.employee_min_daily or total_hours_per_employee_per_day > self.config.employee_max_daily:
+                            print(f"Error: hours for the day not right for {day} in {employee_schedule}")
+                            return False
+                    else:
+                        if total_hours_per_employee_per_day != 0:
+                            print(f"Error: off day issue")
+                            return False
+                    
+                    total_hours_per_day += (employee_schedule[day+1] - employee_schedule[day])
+                    
+                    if employee_schedule[day] == 0 and employee_schedule[day + 1] <= 8:
+                        night_shift_staff_num +=1
+                    if employee_schedule[day] == 8 and employee_schedule[day + 1] <= 16:
+                        day_shift_staff_num +=1
+                    if employee_schedule[day] == 16 and employee_schedule[day + 1] <= 24:
+                        evening_shift_staff_num +=1
+                
+                if total_hours_per_day < self.config.min_daily:
+                    print(f"Error: hourly day less than min required")
+                    return False
+                
+                if night_shift_staff_num < self.config.min_shifts[int(day/2)][1]:
+                    print(f"Error: night shift per day less than min required")
+                    return False
+                if day_shift_staff_num < self.config.min_shifts[int(day/2)][2]:
+                    print(f"Error: day shift per day less than min required")
+                    return False
+                if evening_shift_staff_num < self.config.min_shifts[int(day/2)][3]:
+                    print(f"Error: evening shift per day less than min required")
+                    return False
 
 
-        
 
-        # one_employee = schedule[0]
-        # num_days = len(one_employee)/2
-        # if num_days != self.config.n_days:
-        #     return False
-        # if num_days % self.config.n_days_in_week != 0:
-        #     print("Error: num of days is not divisible by days in week")
-        #     return False
-        # num_night_shifts = 0
-        # for i in range(int(num_days)):
-        #     day_entry = one_employee[i * 2: i * 2 + 2]
-        #     if len(day_entry) != 2:
-        #         print("Error: day", i, "does not have exactly two entries")
-        #         return False
-        #     first_entry = day_entry[0]
-        #     second_entry = day_entry[1]
-        #     if first_entry != -1 and second_entry != -1 and first_entry >= 0 and second_entry <=8:
-        #         num_night_shifts += 1
-        # if num_night_shifts > self.config.employee_max_total_night_shifts:
-        #     print("Error: More than two violations of bounds (0, 8)")
-        #     return False
-        
+    
         return True
 
 
