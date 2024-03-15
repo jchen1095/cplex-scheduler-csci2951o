@@ -158,17 +158,17 @@ class Scheduler:
     def build_search(self):
       
       #TODO: Randomize day + weight
-        favored_days = []
+        # favored_days = []
    
-        for day in range(self.config.n_days):
-            day_weight = 0
-            for i in range(0,4):
-                day_weight += self.config.min_shifts[day][i]
-            favored_days.append((day, day_weight))
+        # for day in range(self.config.n_days):
+        #     day_weight = 0
+        #     for i in range(0,4):
+        #         day_weight += self.config.min_shifts[day][i]
+        #     favored_days.append((day, day_weight))
         
-        favored_days.sort(key=lambda x: x[1], reverse=True)
-        weighted_days = [[self.shift_vars[employee][day] for day, _ in favored_days] for employee in range(self.config.n_employees)]
-        # favored_shifts = [max(set(self.shift_vars[day])) for day, _ in favored_days]
+        # favored_days.sort(key=lambda x: x[1], reverse=True)
+        # weighted_days = [[self.shift_vars[employee][day] for day, _ in favored_days] for employee in range(self.config.n_employees)]
+        # # favored_shifts = [max(set(self.shift_vars[day])) for day, _ in favored_days]
 
         hours_worked = []
         for weeks in range(self.config.n_weeks):
@@ -298,10 +298,17 @@ class Scheduler:
             if num_night_shifts > employee_max_total_night_shifts:
                 print(f"Error: Employee has more than {employee_max_total_night_shifts} night shifts.")
                 return False
-            # for weeks in range(self.config.n_weeks):
-            #     week_start = weeks * 7
-            #     week_end = (weeks + 1) * 7
-            #     for day in range(week_start,week_end):
+            for weeks in range(self.config.n_weeks):
+                week_start = weeks * 14
+                week_end = (weeks + 1) * 14
+                week_hours = 0
+                for day in range(week_start, week_end, 2):
+                    if employee_schedule[day] != -1 and employee_schedule[day + 1] != -1:
+                        week_hours += employee_schedule[day + 1] - employee_schedule[day]
+                if week_hours < 20 or week_hours > 40:
+                    print(f"Error: Employee has total hours outside the range [20, 40] for week {weeks} for employee {employee_schedule}.")
+                    return False
+
 
         
 
@@ -378,9 +385,9 @@ class Scheduler:
                     schedule[employee].extend([16, 16 + hours_worked.get_value()])
                 var_sol = solution.get_var_solution(self.shift_vars[employee][day])
                 hour_sol = solution.get_var_solution(self.hours_vars[employee][day])
-                if var_sol is not None:
-                    print(str(day) + " shift " + str(var_sol.get_value()))
-                    print(str(day) + " hours " + str(hour_sol.get_value()))
+                # if var_sol is not None:
+                    # print(str(day) + " shift " + str(var_sol.get_value()))
+                    # print(str(day) + " hours " + str(hour_sol.get_value()))
         
         for i, employee_schedule in enumerate(schedule):
             print(f"Employee {i}: {employee_schedule}")
